@@ -7,9 +7,9 @@ import (
 	"os"
 )
 
-var OBSTACLE rune = '#'
-var EMPTY rune = '.'
-var VISITED rune = 'X'
+const OBSTACLE rune = '#'
+const EMPTY rune = '.'
+const VISITED rune = 'X'
 
 func solvePart1(inputFile string) int {
 	data := loadDaySixData(inputFile)
@@ -22,7 +22,7 @@ func solvePart1(inputFile string) int {
 	var nextRune rune
 
 	// Find starting position
-	currCol, currRow, direction := startingPosition(data)
+	currRow, currCol, direction := startingPosition(data)
 	data[currRow][currCol] = VISITED
 
 	// Walk and Mark
@@ -46,8 +46,8 @@ func solvePart1(inputFile string) int {
 
 	// count #
 	sum := 0
-	for col := 0; col <= colMax; col++ {
-		for row := 0; row <= rowMax; row++ {
+	for row := 0; row <= rowMax; row++ {
+		for col := 0; col <= colMax; col++ {
 			if data[row][col] == VISITED {
 				sum++
 			}
@@ -57,52 +57,45 @@ func solvePart1(inputFile string) int {
 	return sum
 }
 
-func rotateGuard(direction rune) (newDirection rune) {
+func rotateGuard(direction rune) rune {
 	switch direction {
 	case '^':
-		newDirection = '>'
+		return '>'
 	case '>':
-		newDirection = 'v'
+		return 'v'
 	case 'v':
-		newDirection = '<'
+		return '<'
 	case '<':
-		newDirection = '^'
+		return '^'
 	default:
 		log.Fatal("unknown direction")
+		return '^' // Unreachable
 	}
-
-	return newDirection
 }
 
-func nextPosition(direction rune, currRow int, currCol int) (nextRow int, nextCol int) {
-	if direction == '^' {
-		nextRow = currRow - 1
-		nextCol = currCol
+func nextPosition(direction rune, currRow, currCol int) (int, int) {
+	switch direction {
+	case '^':
+		return currRow - 1, currCol
+	case '>':
+		return currRow, currCol + 1
+	case 'v':
+		return currRow + 1, currCol
+	case '<':
+		return currRow, currCol - 1
 	}
-	if direction == '>' {
-		nextRow = currRow
-		nextCol = currCol + 1
-	}
-	if direction == 'v' {
-		nextRow = currRow + 1
-		nextCol = currCol
-	}
-	if direction == '<' {
-		nextRow = currRow
-		nextCol = currCol - 1
-	}
-	return nextRow, nextCol
+	return currRow, currCol
 }
 
 func startingPosition(grid [][]rune) (int, int, rune) {
 	colMax := len(grid[0]) - 1
 	rowMax := len(grid) - 1
 
-	for col := 0; col <= colMax; col++ {
-		for row := 0; row <= rowMax; row++ {
+	for row := 0; row <= rowMax; row++ {
+		for col := 0; col <= colMax; col++ {
 			r := grid[row][col]
 			if r != OBSTACLE && r != EMPTY {
-				return col, row, r
+				return row, col, r
 			}
 		}
 	}
@@ -116,20 +109,20 @@ func solvePart2(inputFile string) int {
 
 	sum := 0
 
-	startCol, startRow, startDirection := startingPosition(data)
+	startRow, startCol, startDirection := startingPosition(data)
 
 	colMax := len(data[0]) - 1
 	rowMax := len(data) - 1
 
-	for c := 0; c <= colMax; c++ {
-		for r := 0; r <= rowMax; r++ {
+	for r := 0; r <= rowMax; r++ {
+		for c := 0; c <= colMax; c++ {
 			if data[r][c] != EMPTY {
 				continue
 			}
 
 			data[r][c] = OBSTACLE
 			track := make([][][]rune, rowMax+1)
-			for i := 0; i <= colMax; i++ {
+			for i := 0; i <= rowMax; i++ {
 				track[i] = make([][]rune, colMax+1)
 			}
 
