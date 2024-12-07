@@ -14,23 +14,16 @@ import (
 )
 
 type calibration struct {
-	sum  int
-	nums []int
+	sum  uint64
+	nums []uint64
 }
 
-func solvePart1(inputFile string) int {
+func solvePart1(inputFile string) uint64 {
 	data := loadDaySevenData(inputFile)
 
-	finalSum := 0
+	var finalSum uint64
 
 	for _, entry := range data {
-		// Try sum all
-		tot := utils.SumArray(entry.nums)
-		if tot == entry.sum {
-			finalSum += entry.sum
-			continue
-		}
-
 		indexCombinations := combinations.All(utils.IntegerRange(len(entry.nums) - 2))
 
 		// Use multipliers
@@ -54,9 +47,75 @@ func solvePart1(inputFile string) int {
 	return finalSum
 }
 
-// func solvePart2(inputFile string) int {
-// 	return 0
-// }
+func solvePart2(inputFile string) uint64 {
+	data := loadDaySevenData(inputFile)
+
+	var finalSum uint64
+	operators := []rune{'+', '*', '|'}
+
+	for _, entry := range data {
+		for combination := range generateCombinations(operators, len(entry.nums)-1) {
+			tot := entry.nums[0]
+			for i, operation := range combination {
+				num := entry.nums[i+1]
+				switch operation {
+				case '+':
+					tot += num
+				case '*':
+					tot *= num
+				case '|':
+					left := strconv.FormatInt(int64(tot), 10)
+					right := strconv.FormatInt(int64(num), 10)
+					sum, err := strconv.ParseUint(left+right, 10, 64)
+					if err != nil {
+						log.Fatal(err)
+					}
+					tot = sum
+				}
+				if tot > entry.sum {
+					break
+				}
+			}
+			if tot == entry.sum {
+				finalSum += entry.sum
+				break
+			}
+		}
+	}
+
+	return finalSum
+}
+
+func generateCombinations(operators []rune, length int) <-chan []rune {
+	c := make(chan []rune)
+
+	go func() {
+		defer close(c)
+		if length == 0 {
+			return
+		}
+
+		combination := make([]rune, length)
+		var generate func(pos int)
+		generate = func(pos int) {
+			if pos == length {
+				result := append([]rune(nil), combination...)
+				c <- result
+				return
+			}
+
+			for _, op := range operators {
+				combination[pos] = op
+				generate(pos + 1)
+			}
+		}
+
+		generate(0)
+
+	}()
+
+	return c
+}
 
 func loadDaySevenData(inputFile string) []calibration {
 	file, err := os.Open(inputFile)
@@ -72,18 +131,18 @@ func loadDaySevenData(inputFile string) []calibration {
 	for scanner.Scan() {
 		line := scanner.Text()
 
-		var total int
-		total, err = strconv.Atoi(strings.Split(line, ":")[0])
+		var total uint64
+		total, err = strconv.ParseUint(strings.Split(line, ":")[0], 10, 64)
 		if err != nil {
 			log.Fatal(err)
 		}
 		vals := strings.Split(line, " ")
-		var nums []int
+		var nums []uint64
 		for i, val := range vals {
 			if i == 0 {
 				continue
 			}
-			num, err := strconv.Atoi(val)
+			num, err := strconv.ParseUint(val, 10, 64)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -102,5 +161,5 @@ func loadDaySevenData(inputFile string) []calibration {
 
 func main() {
 	fmt.Println(solvePart1("input1.txt"))
-	// fmt.Println(solvePart2("input1.txt"))
+	fmt.Println(solvePart2("input1.txt"))
 }
