@@ -23,3 +23,24 @@ func StringsToInts(arr []string) []int {
 	}
 	return ints
 }
+
+func SumArray(arr []int) int {
+	result := 0
+	for _, n := range arr {
+		result += n
+	}
+	return result
+}
+
+func IntegerRange(end int) []int {
+	if end < 0 {
+		return []int{}
+	}
+
+	s := make([]int, 0, end+1)
+	for i := 0; i <= end; i++ {
+		s = append(s, i)
+	}
+
+	return s
+}
