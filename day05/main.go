@@ -47,6 +47,41 @@ func solvePart2(inputFile string) int {
 
 	sum := 0
 
+	for _, arr := range updates {
+		var order []int
+		valid := true
+		for _, num := range arr {
+			if !valid {
+				break
+			}
+
+			blockers := rules[num]
+			for _, blocker := range blockers {
+				if slices.Contains(order, blocker) {
+					valid = false
+					break
+				}
+			}
+			order = append(order, num)
+		}
+
+		if !valid {
+			newOrder := make([]int, len(arr))
+
+			for _, num := range arr {
+				pos := len(arr) - 1
+				for _, blocker := range rules[num] {
+					if slices.Contains(arr, blocker) {
+						pos -= 1
+					}
+				}
+				newOrder[pos] = num
+			}
+
+			sum += newOrder[int((len(newOrder)-1)/2)]
+		}
+	}
+
 	return sum
 }
 
@@ -86,6 +121,7 @@ func loadDayFiveData(inputFile string) (map[int][]int, [][]int) {
 }
 
 func main() {
+	// fmt.Println(solvePart2("sample_input.txt"))
 	fmt.Println(solvePart1("input1.txt"))
-	// fmt.Println(solvePart2("input1.txt"))
+	fmt.Println(solvePart2("input1.txt"))
 }
