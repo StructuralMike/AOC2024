@@ -17,6 +17,7 @@ func loadDaySixData(inputFile string) {
 }
 
 func main() {
-	fmt.Println(solvePart1("input1.txt"))
+	fmt.Println(solvePart1("sample_input.txt"))
+	// fmt.Println(solvePart1("input1.txt"))
 	// fmt.Println(solvePart2("input1.txt"))
 }
