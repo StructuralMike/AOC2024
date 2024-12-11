@@ -12,7 +12,7 @@ func solvePart1(inputFile string) int {
 // 	return 0
 // }
 
-func loadDaySixData(inputFile string) {
+func loadDayData(inputFile string) {
 
 }
 
