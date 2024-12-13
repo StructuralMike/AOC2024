@@ -42,8 +42,7 @@ func findRegion(i int, j int, plant rune, mapped [][]rune, grid [][]rune) ([][]r
 		if coor[0] < 0 || coor[1] < 0 || coor[0] >= len(grid) || coor[1] >= len(grid[0]) {
 			continue
 		}
-		nextPlant := grid[coor[0]][coor[1]]
-		if nextPlant != plant {
+		if grid[coor[0]][coor[1]] != plant {
 			continue
 		}
 		if mapped[coor[0]][coor[1]] == plant {
