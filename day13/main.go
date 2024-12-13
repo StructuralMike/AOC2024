@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"log"
+	"math"
 	"os"
 	"strconv"
 	"strings"
@@ -66,9 +67,25 @@ func solvePart2(inputFile string) int {
 		K := claw.Prize[0] + 10000000000000
 		L := claw.Prize[1] + 10000000000000
 
+		if A*D-B*C == 0 {
+			continue
+		}
+
+		x0 := float64(K*D-C*L) / float64(A*D-B*C)
+		y0 := float64(A*L-K*B) / float64(A*D-B*C)
+		if !isInteger(x0) || !isInteger(y0) {
+			continue
+		}
+
+		price += int(3*x0 + y0)
+
 	}
 
 	return price
+}
+
+func isInteger(num float64) bool {
+	return math.Ceil(num) == num
 }
 
 func loadDayData(inputFile string) []claw {
