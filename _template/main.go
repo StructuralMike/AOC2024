@@ -1,7 +1,10 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"log"
+	"os"
 )
 
 func solvePart1(inputFile string) int {
@@ -12,8 +15,25 @@ func solvePart1(inputFile string) int {
 // 	return 0
 // }
 
-func loadDayData(inputFile string) {
+func loadDayData(inputFile string) []string {
+	file, err := os.Open(inputFile)
+	if err != nil {
+		log.Fatal(err)
+	}
 
+	scanner := bufio.NewScanner(file)
+
+	var data []string
+	for scanner.Scan() {
+		line := scanner.Text()
+		data = append(data, line)
+	}
+
+	if err := scanner.Err(); err != nil {
+		log.Fatal(err)
+	}
+
+	return data
 }
 
 func main() {
