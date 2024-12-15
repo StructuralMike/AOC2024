@@ -5,12 +5,28 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"time"
 )
 
 type coor struct {
 	x int
 	y int
+}
+
+func (c1 coor) Add(c2 coor) coor {
+	return coor{
+		x: c1.x + c2.x,
+		y: c1.y + c2.y,
+	}
+}
+
+var StepLeft = coor{
+	x: -1,
+	y: 0,
+}
+
+var StepRight = coor{
+	x: 1,
+	y: 0,
 }
 
 func solvePart1(inputFile string) int {
@@ -52,9 +68,9 @@ func solvePart1(inputFile string) int {
 	for _, move := range moves {
 		// time.Sleep(350 * time.Millisecond)
 		// fmt.Print("\033[H\033[2J")
-		for _, row := range grid {
-			fmt.Println(string(row))
-		}
+		// for _, row := range grid {
+		// 	fmt.Println(string(row))
+		// }
 
 		newPos.x = robot.x + dirs[move].x
 		newPos.y = robot.y + dirs[move].y
@@ -147,13 +163,14 @@ func solvePart2(inputFile string) int {
 	}
 
 	var newPos coor
+	var newBox coor
 	var occupant rune
 	for _, move := range moves {
-		time.Sleep(750 * time.Millisecond)
-		fmt.Print("\033[H\033[2J")
-		for _, row := range grid {
-			fmt.Println(string(row))
-		}
+		// time.Sleep(100 * time.Millisecond)
+		// //		fmt.Print("\033[H\033[2J")
+		// for _, row := range grid {
+		// 	fmt.Println(string(row))
+		// }
 
 		newPos.x = robot.x + dirs[move].x
 		newPos.y = robot.y + dirs[move].y
@@ -171,15 +188,57 @@ func solvePart2(inputFile string) int {
 			grid[newPos.y][newPos.x] = '@'
 			robot.x = newPos.x
 			robot.y = newPos.y
+			continue
 		}
 
-		// Move boxes
+		// Move boxes horizontally
+		if move == '<' || move == '>' {
+			newBox = newPos
+			for occupant == '[' || occupant == ']' {
+				newBox.x = newBox.x + dirs[move].x
+				occupant = grid[newBox.y][newBox.x]
+			}
 
+			if occupant == '#' {
+				continue
+			}
+
+			// Push
+			for newBox != newPos {
+				grid[newBox.y][newBox.x] = grid[newBox.y][newBox.x+dirs[move].x*-1]
+				newBox.x = newBox.x + dirs[move].x*-1
+			}
+
+			grid[robot.y][robot.x] = '.'
+			grid[newPos.y][newPos.x] = '@'
+			robot.x = newPos.x
+			robot.y = newPos.y
+			continue
+		}
+
+		// Move vertically
+		if move == 'v' || move == '^' {
+			if !canPush(newPos, dirs[move], grid) {
+				continue
+			}
+			grid = pushBox(newPos, dirs[move], grid)
+
+			grid[robot.y][robot.x] = '.'
+			grid[newPos.y][newPos.x] = '@'
+			robot.x = newPos.x
+			robot.y = newPos.y
+		}
+
+	}
+
+	fmt.Print("\033[H\033[2J")
+	for _, row := range grid {
+		fmt.Println(string(row))
 	}
 
 	sum := 0
 	for i := 0; i < len(grid); i++ {
-		for j := 0; j < len(grid); j++ {
+		for j := 0; j < len(grid[0]); j++ {
 			if grid[i][j] == '[' {
 				sum += i*100 + j
 			}
@@ -187,6 +246,52 @@ func solvePart2(inputFile string) int {
 	}
 
 	return sum
+}
+
+func canPush(loc coor, vec coor, grid [][]rune) bool {
+	switch grid[loc.y][loc.x] {
+	case '.':
+		return true
+	case '[':
+		return (canPush(loc.Add(vec), vec, grid) &&
+			canPush(loc.Add(StepRight).Add(vec), vec, grid))
+	case ']':
+		return (canPush(loc.Add(vec), vec, grid) &&
+			canPush(loc.Add(StepLeft).Add(vec), vec, grid))
+	default:
+		return false
+	}
+}
+
+func pushBox(loc coor, vec coor, grid [][]rune) [][]rune {
+	if grid[loc.y][loc.x] == '.' {
+		return grid
+	}
+
+	grid = pushBox(
+		loc.Add(vec),
+		vec,
+		grid,
+	)
+
+	offset := 1
+	if grid[loc.y][loc.x] == ']' {
+		offset = -1
+	}
+
+	grid = pushBox(
+		loc.Add(coor{x: offset, y: 0}).Add(vec),
+		vec,
+		grid,
+	)
+
+	grid[loc.y+vec.y][loc.x+vec.x] = grid[loc.y][loc.x]
+	grid[loc.y+vec.y][loc.x+vec.x+offset] = grid[loc.y][loc.x+offset]
+
+	grid[loc.y][loc.x] = '.'
+	grid[loc.y][loc.x+offset] = '.'
+
+	return grid
 }
 
 func loadDayData(inputFile string) ([][]rune, []rune) {
@@ -270,6 +375,7 @@ func loadDayDataPart2(inputFile string) ([][]rune, []rune) {
 
 func main() {
 	// fmt.Println(solvePart1("sample_input.txt"))
+	// fmt.Println(solvePart2("sample_input.txt"))
 	// fmt.Println(solvePart1("input1.txt"))
 	fmt.Println(solvePart2("input1.txt"))
 }
