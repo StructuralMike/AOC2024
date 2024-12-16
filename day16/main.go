@@ -82,7 +82,7 @@ func findShortestPath(grid [][]rune, start coor, goal coor) [][]rune {
 
 	if newPos == Empty {
 		grid[newLoc.y][newLoc.x] = position
-		findShortestPath(grid, newLoc, goal)
+		grid = findShortestPath(grid, newLoc, goal)
 	}
 
 	return grid
