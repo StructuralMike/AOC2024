@@ -19,6 +19,32 @@ const Wall = '#'
 const Empty = '.'
 const Visited = '-'
 
+var Dirs = map[rune]coor{
+	'^': {
+		x: 0,
+		y: -1,
+	},
+	'>': {
+		x: 1,
+		y: 0,
+	},
+	'v': {
+		x: 0,
+		y: 1,
+	},
+	'<': {
+		x: -1,
+		y: 0,
+	},
+}
+
+func (c1 coor) Add(c2 coor) coor {
+	return coor{
+		x: c1.x + c2.x,
+		y: c1.y + c2.y,
+	}
+}
+
 func solvePart1(inputFile string) int {
 	grid := loadDayData(inputFile)
 	printGrid(grid)
@@ -30,6 +56,7 @@ func solvePart1(inputFile string) int {
 		for x, col := range row {
 			if col == Start {
 				deer = coor{x: x, y: y}
+				grid[y][x] = '>'
 			}
 			if col == Exit {
 				goal = coor{x: x, y: y}
@@ -37,8 +64,28 @@ func solvePart1(inputFile string) int {
 		}
 	}
 
-	fmt.Println(deer, goal)
+	grid = findShortestPath(grid, deer, goal)
+	printGrid(grid)
+
 	return 0
+}
+
+func findShortestPath(grid [][]rune, start coor, goal coor) [][]rune {
+	position := grid[start.y][start.x]
+
+	// Try the same direction
+	newLoc := start.Add(Dirs[position])
+	newPos := grid[newLoc.y][newLoc.x]
+	if newPos == Wall {
+		return grid
+	}
+
+	if newPos == Empty {
+		grid[newLoc.y][newLoc.x] = position
+		findShortestPath(grid, newLoc, goal)
+	}
+
+	return grid
 }
 
 // func solvePart2(inputFile string) int {
