@@ -74,41 +74,54 @@ func solvePart1(inputFile string) string {
 }
 
 func solvePart2(inputFile string) int {
-	var output int
-	var i int
-	start := (1 << 48)
 
 	_, program := loadDayData(inputFile)
 
-	registers := Registers{}
-	for i = 100000000000; i < 1000000000000; i++ {
+	num := findOctet(program, 0) >> 3
+
+	registers := Registers{
+		A: num,
+		B: 0,
+		C: 0,
+	}
+	var outcome []int
+	for i := 0; i < len(program); i++ {
+		registers.C = (registers.A & 7) ^ 3
+		registers.B = ((registers.C ^ 4) ^ (registers.A >> registers.C)) & 7
+		outcome = append(outcome, registers.B)
+		registers.A = registers.A >> 3
+	}
+	fmt.Println(outcome)
+	return num
+}
+
+func findOctet(program []int, start int) int {
+	if len(program) == 0 {
+		return start
+	}
+
+	registers := Registers{
+		A: 0,
+		B: 0,
+		C: 0,
+	}
+
+	next := program[len(program)-1]
+	newProgram := program[0 : len(program)-1]
+
+	for i := 0; i < 8; i++ {
 		registers.A = start + i
-		registers.B = 0
-		registers.C = 0
-
-		output = 0
-
-		for registers.A != 0 {
-			registers.C = (registers.A & 7) ^ 3
-			registers.B = ((registers.C ^ 4) ^ (registers.A >> registers.C)) & 7
-			if program[output] == registers.B {
-				output++
-			} else {
-				break
+		registers.C = (registers.A & 7) ^ 3
+		registers.B = ((registers.C ^ 4) ^ (registers.A >> registers.C)) & 7
+		if next == registers.B {
+			outcome := findOctet(newProgram, (start+i)<<3)
+			if outcome != -1 {
+				return outcome
 			}
-			registers.A = registers.A >> 3
-		}
-
-		if output > 12 {
-			fmt.Println(output, strconv.FormatInt(int64(i), 2))
-		}
-
-		if output == len(program) {
-			break
 		}
 	}
 
-	return output
+	return -1
 }
 
 func intArraysEqual(a []int, b []int) bool {
@@ -177,6 +190,6 @@ func main() {
 	// fmt.Println(solvePart1("sample_input.txt"))
 	// fmt.Println(solvePart1("input1.txt"))
 	start := time.Now()
-	fmt.Println(solvePart2("input2.txt"))
+	fmt.Println(solvePart2("input1.txt"))
 	fmt.Println(time.Since(start))
 }
